@@ -82,7 +82,7 @@ ZEAL_WORKERS=4
 
 # --- MongoDB (single-node replica set rs0) ---
 MONGODB_URI=mongodb://mongodb:27017/?replicaSet=rs0
-MONGODB_DB=gococms
+MONGODB_DB=goco
 
 # --- Redis ---
 REDIS_URL=redis://redis:6379
@@ -197,7 +197,7 @@ docker compose up -d mongodb redis minio meilisearch mailpit
 ```bash
 cp .env.example .env
 # point the URIs at localhost since the app runs on the host:
-#   MONGO_URI=mongodb://127.0.0.1:27017/?replicaSet=rs0
+#   MONGODB_URI=mongodb://127.0.0.1:27017/?replicaSet=rs0
 #   REDIS_URL=redis://127.0.0.1:6379
 composer install
 php app.php                  # foreground; Ctrl-C to stop
@@ -428,8 +428,8 @@ docker compose exec mongodb mongosh --eval "rs.status().ok"   # expect 1
   // in mongosh
   rs.initiate({ _id: "rs0", members: [{ _id: 0, host: "mongodb:27017" }] })
   ```
-  Ensure `MONGO_URI` includes `?replicaSet=rs0`.
-- **`Server selection timed out`** from the app — the `gococms` container cannot resolve `mongodb`. Confirm both are on the same Compose network (`docker compose ps`) and that `MONGO_URI` uses the **service name** (`mongodb`), not `127.0.0.1`, when the app runs in a container.
+  Ensure `MONGODB_URI` includes `?replicaSet=rs0`.
+- **`Server selection timed out`** from the app — the `gococms` container cannot resolve `mongodb`. Confirm both are on the same Compose network (`docker compose ps`) and that `MONGODB_URI` uses the **service name** (`mongodb`), not `127.0.0.1`, when the app runs in a container.
 - Native/local runs must instead point at `127.0.0.1:27017`.
 
 ### 7.4 Redis connectivity

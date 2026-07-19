@@ -87,6 +87,8 @@ This is a reference, not a tutorial. Terms are grouped A–Z. Where a concept ha
 
 **Hook** — GOCO's extension mechanism spanning [Actions](#a) (side-effects) and [Filters](#f) (value transforms), exposed via the `Hook` facade with priority ordering and plugin-namespaced names. See [Event & Hook System](architecture/event-hook-system.md).
 
+**htmx** — The hypermedia library that powers GOCO's frontend: server-rendered HTML is progressively enhanced, and interactions swap individual regions rendered by ZealPHP's `App::fragment()` over the wire instead of running a client-side SPA. Paired with [SSE](#s)/[WebSocket](#w) for live updates. See [Rendering Pipeline](architecture/rendering-pipeline.md) and [ZealPHP Foundation](architecture/zealphp-foundation.md).
+
 ## I
 
 **Index** — A documented MongoDB index (single-field, compound, text, TTL) that backs a query pattern; tenant-scoped collections lead with `workspace_id, website_id`. See [Data Model](architecture/data-model.md).
@@ -181,7 +183,7 @@ This is a reference, not a tutorial. Terms are grouped A–Z. Where a concept ha
 
 **Soft Delete** — Non-destructive removal via a `deleted_at` timestamp on every document, preserving history and enabling restore. See [Data Model](architecture/data-model.md).
 
-**SSE (Server-Sent Events)** — One-way server-to-client streaming implemented as a [Generator](#g) plus `$response->sse()`. See [Caching, Queue & Realtime](architecture/caching-and-queue.md).
+**SSE (Server-Sent Events)** — One-way server-to-client streaming implemented as a [Generator](#generator) plus `$response->sse()`. See [Caching, Queue & Realtime](architecture/caching-and-queue.md).
 
 **Store** — `\ZealPHP\Store`: shared, cross-[worker](#w) memory over `OpenSwoole\Table` (`Store::make/set/get`) with pub/sub (`Store::publish` + `App::subscribe`) and an optional Redis backend (`Store::defaultBackend(Store::BACKEND_REDIS)`). See [ZealPHP Foundation](architecture/zealphp-foundation.md).
 

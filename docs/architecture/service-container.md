@@ -145,7 +145,7 @@ Relevant `settings` documents (see the full [Data Model](./data-model.md)):
 // Indexes
 db.settings.createIndex({ workspace_id: 1, website_id: 1, scope: 1 }, { unique: true, name: "settings_scope_unique" });
 db.plugins.createIndex({ workspace_id: 1, slug: 1 }, { unique: true, name: "plugins_slug_unique" });
-db.plugins.createIndex({ status: 1 }, { name: "plugins_status" });   // active plugins -> providers to register
+db.plugins.createIndex({ "activations.workspace_id": 1, "activations.enabled": 1 }, { name: "plugins_activations" });   // per-workspace active plugins -> providers to register
 ```
 
 > **Note**
@@ -608,7 +608,7 @@ Providers are collected from three sources, then ordered and de-duplicated:
 
 1. **Core list** — `config/providers.php` (explicit, ordered).
 2. **Package composer manifests** — each `gococms/*` package declares its provider under `extra.goco.providers`; Composer's package-discovery step aggregates them.
-3. **Active plugins** — the [plugin engine](../core/plugin-engine.md) reads `db.plugins` where `status: "active"` and appends each plugin's provider.
+3. **Active plugins** — the [plugin engine](../core/plugin-engine.md) reads `db.plugins` where `activations.enabled` is `true` for the current workspace and appends each plugin's provider.
 
 ```json
 // packages/search/composer.json

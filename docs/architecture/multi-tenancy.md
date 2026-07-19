@@ -294,7 +294,7 @@ stateDiagram-v2
     revoked --> [*]
 ```
 
-1. **Add** — operator creates a `domains` document (`type: "custom"`, `verified: false`) and is shown a DNS TXT verification token plus the target (CNAME to `edge.goco.app` or A record).
+1. **Add** — operator creates a `domains` document (`type: "alias"`, `verified: false`) and is shown a DNS TXT verification token plus the target (CNAME to `edge.goco.app` or A record).
 2. **Verify** — a background job (`jobs` collection) resolves the TXT record; on success sets `verified: true` and dispatches `Hook::dispatch('domain.verified', $domain)`, which busts the Redis tenant cache.
 3. **Certificate** — Traefik requests a Let's Encrypt certificate for the host. Because Traefik is the certresolver owner, no application code touches ACME.
 

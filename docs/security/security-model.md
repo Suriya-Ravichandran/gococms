@@ -341,7 +341,7 @@ db.audit_logs.find({
 }).sort({ created_at: -1 }).limit(50)
 ```
 
-Indexes on `(website_id, created_at)` and `(actor, created_at)` keep forensic queries fast. Logs feed the [Analytics](../architecture/overview.md) and alerting pipelines and are covered by [Backup & Restore](../deployment/backup-restore.md) retention policy.
+Indexes on `(website_id, created_at)` and `(actor, created_at)` keep forensic queries fast. Logs feed the analytics and alerting pipelines (see [Architecture Overview](../architecture/overview.md)) and are covered by the [Backup & Restore](../deployment/backup-restore.md) retention policy.
 
 ---
 

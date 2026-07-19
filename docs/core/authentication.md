@@ -195,6 +195,8 @@ db.sessions.createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 })  // TTL sw
 
 ### 5.3 `auth_tokens`
 
+> **Note** — `auth_tokens` is an **Authentication-module-owned collection** that extends the core [Data Model](../architecture/data-model.md) catalog (which documents module-owned collections). It is not part of the core enumerated set.
+
 Single-use, hashed tokens for email verification, password reset, and refresh-token families.
 
 ```javascript

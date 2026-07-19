@@ -142,7 +142,7 @@ Global (not tenant-scoped) — a catalog of installed theme packages available t
   _id: ObjectId,
   slug: "aurora",                 // unique package identifier
   name: "Aurora",
-  version: "2.3.1",               // SemVer of the installed package
+  package_version: "2.3.1",       // SemVer of the installed package
   parent: null,                   // slug of parent theme, or null
   author: { name: "GOCO Labs", url: "https://gococms.dev", email: "…" },
   license: "MIT",
@@ -168,11 +168,11 @@ Global (not tenant-scoped) — a catalog of installed theme packages available t
   status: "installed",            // installed | disabled | quarantined
   // standard envelope
   created_at: ISODate, updated_at: ISODate, deleted_at: null,
-  version_doc: 4, created_by: ObjectId, updated_by: ObjectId
+  version: 4, created_by: ObjectId, updated_by: ObjectId
 }
 ```
 
-> **Note** `version` is the package's SemVer; `version_doc` is the document-revision counter from the standard GOCO envelope. They are intentionally distinct.
+> **Note** `package_version` is the package's SemVer; `version` is the document-revision counter from the standard GOCO envelope. They are intentionally distinct.
 
 **Indexes**
 
@@ -393,7 +393,7 @@ The admin app exposes theme operations as file-based REST endpoints (`apps/admin
 | `GET /api/themes/active` | `themes.read` | Current website's active theme + values. |
 | `PUT /api/themes/active/settings` | `themes.manage` | Persist customizer `values`. |
 | `POST /api/themes/active/preview` | `themes.manage` | Open a draft preview session. |
-| `GET /api/themes/{slug}/preview` | `themes.manage` | `Theme::preview()` render fixture. |
+| `GET /api/themes/{slug}/preview` | `themes.manage` | Render a preview fixture via the internal preview service. |
 | `POST /api/themes/import` | `themes.manage` | Install a packaged theme archive. |
 
 Handlers return arrays (auto-JSON). Example `apps/admin/api/themes/active.php`:
@@ -413,7 +413,7 @@ return [
     'slug'     => $state->activeSlug,
     'version'  => $state->activeVersion,
     'layouts'  => Theme::layouts($state->activeSlug),
-    'settings' => Theme::properties($state->activeSlug), // PropertySchema
+    'settings' => \Goco\Theme\Customizer::schema($state->activeSlug), // PropertySchema (internal service)
     'values'   => $state->values,
 ];
 ```
@@ -614,7 +614,7 @@ flowchart LR
 
 A right-rail control panel next to a live iframe preview, powered by the [Page Builder](./page-builder.md) shell:
 
-- Controls are generated from the `PropertySchema` (`Theme::properties($slug)`), grouped by `customizerSections`.
+- Controls are generated from the `PropertySchema` (derived from the theme manifest by the internal `Goco\Theme\Customizer` service), grouped by `customizerSections`.
 - Each edit updates `draft_values` and live-injects updated CSS custom properties into the preview iframe (no full reload).
 - **Publish** persists `values`, triggers `AssetCompiler`, emits `theme.customized`.
 - **Reset** reverts a control to its manifest `default`.

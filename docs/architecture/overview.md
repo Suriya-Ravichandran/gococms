@@ -339,6 +339,19 @@ Redis-backed multi-tier caching (config, rendered fragments, query results, sess
 tenant-scoped keys and event-driven invalidation tied to hooks like `content.published`. See
 [Caching, Queue & Realtime](caching-and-queue.md).
 
+### 7.8 Frontend and interaction model
+
+GOCO's admin and public surfaces are **server-rendered HTML enhanced with [htmx](https://htmx.org)** —
+a hypermedia model rather than a client-side SPA. The [Rendering Pipeline](rendering-pipeline.md) emits
+full pages on first load and re-renders only the changed region as an **`App::fragment()`** swap for
+interactions (form posts, inline edits, pagination, filtering, the Page Builder canvas), while **SSE**
+and **WebSocket** stream live updates (notifications, builder presence, AI token streams). Client
+JavaScript stays deliberately thin — htmx wiring plus a few progressive enhancers such as WebAuthn — so
+no SPA framework is required to run a GOCO site. The visual [Page Builder](../core/page-builder.md) ships
+a richer editor client but still keeps the rendered truth on the server, swapping htmx out-of-band
+fragments. External consumers can equally drive the [REST API](../reference/api-reference.md) from any
+framework (React, mobile, integrations).
+
 ---
 
 ## 8. Data architecture

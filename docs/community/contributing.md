@@ -91,7 +91,7 @@ git remote add upstream git@github.com:gococms/gococms.git
 cp .env.example .env
 
 # 4. Bring up the dev stack (gococms, mongodb, redis, traefik, minio, meilisearch, mailpit)
-docker compose -f docker/compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 # 5. Install PHP dependencies and run the installer
 docker compose exec gococms composer install

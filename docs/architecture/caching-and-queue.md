@@ -259,13 +259,13 @@ flowchart LR
 db.createCollection("jobs", {
   validator: { $jsonSchema: {
     bsonType: "object",
-    required: ["_id","queue","name","payload","status","attempts","max_attempts",
-               "available_at","created_at","workspace_id"],
+    required: ["_id","queue","type","payload","status","attempts","max_attempts",
+               "available_at","created_at"],
     properties: {
       queue:        { bsonType: "string" },
-      name:         { bsonType: "string" },   // job class / handler id
+      type:         { bsonType: "string" },   // job class / handler id
       payload:      { bsonType: "object" },
-      status:       { enum: ["queued","reserved","running","done","failed","dead"] },
+      status:       { enum: ["queued","running","succeeded","failed","dead"] },
       attempts:     { bsonType: "int", minimum: 0 },
       max_attempts: { bsonType: "int", minimum: 1 },
       priority:     { bsonType: "int" },
@@ -273,14 +273,14 @@ db.createCollection("jobs", {
       reserved_at:  { bsonType: ["date","null"] },
       finished_at:  { bsonType: ["date","null"] },
       last_error:   { bsonType: ["string","null"] },
-      workspace_id: { bsonType: "string" },
-      website_id:   { bsonType: ["string","null"] }
+      workspace_id: { bsonType: ["objectId","null"] },
+      website_id:   { bsonType: ["objectId","null"] }
     }
   }}
 });
 
 db.jobs.createIndex({ queue: 1, status: 1, available_at: 1 });   // worker claim scan
-db.jobs.createIndex({ status: 1, finished_at: 1 });              // reaping done/dead
+db.jobs.createIndex({ status: 1, finished_at: 1 });              // reaping succeeded/dead
 db.jobs.createIndex({ workspace_id: 1, website_id: 1, status: 1 });
 ```
 
@@ -341,7 +341,7 @@ goco queue:retry <job_id>   # requeue a failed/dead job
 goco queue:flush --dead     # clear the dead-letter set
 ```
 
-Each worker claims a job (`BRPOPLPUSH` → processing list, mark `jobs.status = reserved` with a lease TTL), runs `handle()` inside a coroutine with the job's timeout, then:
+Each worker claims a job (`BRPOPLPUSH` → processing list, mark `jobs.status = running` with a lease recorded in `reserved_at`), runs `handle()` inside a coroutine with the job's timeout, then:
 
 - **Success** → remove from processing list, set `jobs.status = done`, `finished_at`.
 - **Failure** & attempts remaining → increment `attempts`, compute `backoff($attempt)`, push to `queue:delayed`, set `status = failed`, record `last_error`.

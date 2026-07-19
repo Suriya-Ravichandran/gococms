@@ -111,7 +111,7 @@ The `page.rendering` action fires immediately after resolution so plugins can ob
 circuit:
 
 ```php
-Hook::dispatch('page.rendering', $resolution, $req);
+Hook::dispatch('page.rendering', $resolution->page, $ctx);
 ```
 
 ---
@@ -199,7 +199,7 @@ visibility metadata:
 }
 ```
 
-The `layout.building` filter lets plugins rewrite the tree before rendering (inject an announcement
+The `layout.tree` filter lets plugins rewrite the tree before rendering (inject an announcement
 bar, wrap the tree in an A/B experiment variant, strip nodes a plan doesn't allow):
 
 ```php

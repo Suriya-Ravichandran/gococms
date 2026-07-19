@@ -187,8 +187,8 @@ ACME_EMAIL=ops@example.com        # Let's Encrypt registration + expiry alerts
 ACME_CA=production                # 'staging' while testing to avoid rate limits
 
 # ---- MongoDB ----
-MONGODB_URI=mongodb://gococms:REPLACE_STRONG_PW@mongodb:27017/gococms?replicaSet=rs0&authSource=admin
-MONGODB_DATABASE=gococms
+MONGODB_URI=mongodb://gococms:REPLACE_STRONG_PW@mongodb:27017/goco?replicaSet=rs0&authSource=admin
+MONGODB_DB=goco
 
 # ---- Redis (cache / queue / sessions / locks / rate-limit / realtime) ----
 REDIS_URL=redis://:REPLACE_STRONG_PW@redis:6379/0

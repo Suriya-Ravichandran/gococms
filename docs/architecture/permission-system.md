@@ -108,7 +108,7 @@ Authorization reads from `roles` (definitions), `users` (assignments), and write
     "media.create", "media.read", "media.update",
     "collections.manage"
   ],
-  "is_system": false,
+  "builtin": false,
   "is_default": false,
   "policies": ["business_hours_publish"],
   "version": 3,
@@ -119,24 +119,26 @@ Authorization reads from `roles` (definitions), `users` (assignments), and write
 }
 ```
 
-- `level` — numeric weight for the hierarchy (higher = broader). Used for "can a role manage another role?" comparisons.
+- `rank` — numeric weight for the hierarchy (higher = broader). Used for "can a role manage another role?" comparisons.
 - `inherits` — slugs whose capability sets are unioned in (transitive).
-- `is_system` — system roles are seeded, versioned by GOCO, and cannot be deleted (only their per-tenant overrides can).
+- `builtin` — built-in (system) roles are seeded, versioned by GOCO, and cannot be deleted (only their per-tenant overrides can).
+- `is_default` — assigned automatically to new members of the scope when no explicit role is granted.
 - `capabilities` — explicit grants added on top of inherited ones.
 - `policies` — ABAC policy IDs attached to this role.
 
 ### Role assignment on `users`
 
-Assignments are stored on the user document as a scoped array so a single user can be `owner` in one workspace and `viewer` in another:
+Role grants are stored on the user document as a scoped `roles[]` array — one entry per `(role, workspace, website)` — so a single user can be `owner` in one workspace and `viewer` in another:
 
 ```json
 {
   "_id": "ObjectId(...)",
   "email": "dana@example.com",
-  "assignments": [
-    { "workspace_id": "ObjectId(w1)", "website_id": null,          "roles": ["super-admin"] },
-    { "workspace_id": "ObjectId(w1)", "website_id": "ObjectId(s1)", "roles": ["editor", "seo-manager"] },
-    { "workspace_id": "ObjectId(w2)", "website_id": "ObjectId(s9)", "roles": ["viewer"] }
+  "roles": [
+    { "role": "super-admin", "workspace_id": "ObjectId(w1)", "website_id": null },
+    { "role": "editor",      "workspace_id": "ObjectId(w1)", "website_id": "ObjectId(s1)" },
+    { "role": "seo-manager", "workspace_id": "ObjectId(w1)", "website_id": "ObjectId(s1)" },
+    { "role": "viewer",      "workspace_id": "ObjectId(w2)", "website_id": "ObjectId(s9)" }
   ]
 }
 ```
@@ -149,17 +151,17 @@ db.roles.createIndex(
   { workspace_id: 1, website_id: 1, slug: 1 },
   { unique: true, partialFilterExpression: { deleted_at: null } }
 );
-db.roles.createIndex({ workspace_id: 1, level: -1 });
+db.roles.createIndex({ workspace_id: 1, rank: -1 });
 
-// Resolve a user's assignments quickly
-db.users.createIndex({ "assignments.workspace_id": 1, "assignments.website_id": 1 });
+// Resolve a user's role grants quickly
+db.users.createIndex({ "roles.workspace_id": 1, "roles.website_id": 1 });
 
 // Audit querying
 db.audit_logs.createIndex({ workspace_id: 1, website_id: 1, created_at: -1 });
 db.audit_logs.createIndex({ actor_id: 1, action: 1, created_at: -1 });
 ```
 
-A JSON-Schema validator on `roles` enforces `slug` pattern (`^[a-z][a-z0-9-]*$`), `level` range `0–100`, and that `capabilities[*]` match `^[a-z][a-z0-9-]*\.[a-z][a-z0-9-*]*$`.
+A JSON-Schema validator on `roles` enforces `slug` pattern (`^[a-z][a-z0-9-]*$`), `rank` range `0–100`, `inherits[*]` as role slugs, and that `capabilities[*]` match `^[a-z][a-z0-9-]*\.[a-z][a-z0-9-*]*$`.
 
 ---
 
@@ -398,7 +400,7 @@ Screens:
 
 - **Members** — table of subjects with their per-website role chips; inline role assignment via a scope-aware picker (`role.assignable` filter limits options to roles the current actor may grant).
 - **Roles** — list of system and custom roles; a role editor with a grouped capability picker fed by `CapabilityRegistry` (grouped by resource: Pages, Posts, Media, Themes, Widgets, Plugins, Users, Domains, AI, API, Collections, Settings, plus a "Plugins" group per registering plugin).
-- **Custom Role Builder** — clone a system role, toggle capabilities, attach policies, set `level` (bounded below the actor's own level).
+- **Custom Role Builder** — clone a system role, toggle capabilities, attach policies, set `rank` (bounded below the actor's own level).
 - **Effective Matrix / Inspector** — pick a subject + website, see the resolved capabilities and, per capability, the `Decision.explain()` chain (which role granted it, which policy could deny it).
 
 ```mermaid
@@ -415,7 +417,7 @@ flowchart LR
     API -->|invalidate| Redis[(Redis cache)]
 ```
 
-Every mutation from these screens is itself authorized: assigning roles requires `users.manage`; editing roles requires `users.manage` **and** the target role's `level` must be strictly below the actor's highest role level (you cannot mint a role more powerful than yourself).
+Every mutation from these screens is itself authorized: assigning roles requires `users.manage`; editing roles requires `users.manage` **and** the target role's `rank` must be strictly below the actor's highest role level (you cannot mint a role more powerful than yourself).
 
 ---
 
@@ -425,9 +427,9 @@ This section is the heart of the document. See the platform-wide [Security Model
 
 ### Roles and their hierarchy
 
-Thirteen system roles ship by default. `level` orders them; `inherits` unions capabilities upward.
+Thirteen system roles ship by default. `rank` orders them; `inherits` unions capabilities upward.
 
-| Role | `level` | Inherits | Intent |
+| Role | `rank` | Inherits | Intent |
 |------|:------:|----------|--------|
 | `owner` | 100 | super-admin | Billing + full control of a workspace; cannot be removed by others. Wildcard within workspace scope. |
 | `super-admin` | 95 | website-admin | Full technical control across all websites in the workspace. Wildcard within workspace scope. |
@@ -558,7 +560,7 @@ Authorization runs dozens of times per request, so the resolver is engineered fo
 - **Bitset expansion.** The role hierarchy is expanded once per role edit and stored denormalized on each role's `capabilities`, so resolution is a union of pre-computed arrays, not a graph walk at request time.
 - **Policy short-circuit.** `PolicyEngine` evaluates the cheapest, always-on policies (`tenant_scope`) first and returns on the first deny.
 - **Batch checks.** List views call `capabilities()` once and filter in memory instead of calling `can()` per row.
-- **No N+1 role reads.** `RoleRepository::forSubject()` loads all matching roles for a scope in one query using the `assignments` index.
+- **No N+1 role reads.** `RoleRepository::forSubject()` loads all matching roles for a scope in one query using the `roles` grant index (`roles.workspace_id` / `roles.website_id`).
 
 ---
 
@@ -626,7 +628,7 @@ Newly registered capabilities are **denied for every existing role** until an ow
 
 ### Other extension seams
 
-- **Custom roles** — created per tenant via UI/CLI, stored in `roles` with `is_system: false`.
+- **Custom roles** — created per tenant via UI/CLI, stored in `roles` with `builtin: false`.
 - **`capabilities.effective` filter** — programmatic grant/revoke for feature flags, trials, incidents.
 - **`authz.decision` filter** — integrate an external policy service (OPA, etc.) as a final deny gate.
 - **Custom conditions** — implement `ConditionInterface` and register via `Permissions::condition()`.
@@ -646,7 +648,7 @@ See the full [CLI Reference](../reference/cli-reference.md).
 
 ## 16. Upgrade Strategy
 
-- **System roles are versioned and idempotently re-seeded** on each release migration. Tenant customizations live in separate override documents (or `is_system: false` clones) so upgrades never clobber local edits.
+- **System roles are versioned and idempotently re-seeded** on each release migration. Tenant customizations live in separate override documents (or `builtin: false` clones) so upgrades never clobber local edits.
 - **New core capabilities** added in a release are, by default, granted only to roles that already hold the resource's `.manage` capability; the migration notes list every addition. No role silently gains a genuinely new power.
 - **Deprecations** — a removed capability is aliased to its replacement for one minor cycle and flagged `deprecated` in `CapabilityRegistry`; checks against the old string log a warning.
 - **Schema evolution** — `roles` validator changes ship as reversible migrations under `scripts/`; the `version` field on each document supports staged rollout.

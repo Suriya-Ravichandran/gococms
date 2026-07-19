@@ -132,7 +132,7 @@ enum PublishState: string
 | Document field | `snake_case` | `workspace_id`, `created_at` |
 | Hook action | `subject.verb[.tense]` | `content.publishing`, `page.rendered` |
 | Hook filter | `subject.noun` | `page.title`, `menu.items` |
-| Config / env key | `SCREAMING_SNAKE` | `GOCO_MONGO_URI` |
+| Config / env key | `SCREAMING_SNAKE` | `MONGODB_URI` |
 
 Name by domain intent, not implementation. `PageRepository`, not `PageMongoDao`. Booleans read as predicates: `isPublished`, `hasCapability`, `canPublish`.
 
@@ -344,11 +344,11 @@ goco lint:style --fix # apply formatting locally
 
 ## 8. Testing Expectations & Coverage
 
-Tests are part of the change, not a follow-up. See [Testing Strategy](../community/testing-strategy.md) for the full harness, fixtures, and CI matrix; the standards a contribution must meet are:
+Tests are part of the change, not a follow-up. See [Testing Strategy](testing-strategy.md) for the full harness, fixtures, and CI matrix; the standards a contribution must meet are:
 
 - **Every bug fix ships a regression test** that fails before the fix and passes after.
 - **Every new public method / behavior ships tests.** New SDK surfaces and hooks require both a unit test and an integration test.
-- **Coverage floors (enforced):** `packages/*` and `core/` require **>= 85% line coverage**; security-sensitive packages (`auth`, `database`, `plugin-engine`, `storage`) require **>= 90%**. Coverage may not drop on a PR.
+- **Coverage floors (enforced):** `core/` and `packages/*` require **>= 90% line coverage**, with an **85% overall floor**; security-sensitive packages (`auth`, `database`, `plugin-engine`, `storage`) hold the same 90% bar. Coverage may not drop on a PR.
 - **Coroutine tests run under the OpenSwoole harness.** Concurrency-sensitive code (anything touching `Store`, `Counter`, `G`, sessions, or shared services) must include a test that exercises it across multiple concurrent coroutines to prove no cross-request leakage.
 - **MongoDB and Redis tests run against real service containers** (from the Docker compose stack), not mocks, for repository and integration layers. Pure logic is unit-tested without I/O.
 - Tests are deterministic and isolated: each test seeds and tears down its own tenant scope; no test depends on another's order or on wall-clock timing.
@@ -387,10 +387,10 @@ BREAKING CHANGE: existing sessions are invalidated on upgrade.
 
 ## Related
 
-- [Testing Strategy](../community/testing-strategy.md) — test harness, coroutine testing, coverage matrix, CI.
+- [Testing Strategy](testing-strategy.md) — test harness, coroutine testing, coverage matrix, CI.
 - [Service Container & Dependency Injection](../architecture/service-container.md) — how coroutine-safe services are built and scoped.
-- [Contributing](../community/contributing.md) — branch model, PR flow, and review process.
-- [Code of Conduct](../community/code-of-conduct.md) — community expectations for collaboration.
+- [Contributing](contributing.md) — branch model, PR flow, and review process.
+- [Code of Conduct](code-of-conduct.md) — community expectations for collaboration.
 - [ZealPHP Foundation](../architecture/zealphp-foundation.md) — runtime modes, coroutines, and the request model.
 - [MongoDB Data Layer](../architecture/database-mongodb.md) — repositories, validators, and transactions.
 - [Data Model](../architecture/data-model.md) — collections, fields, and indexes.

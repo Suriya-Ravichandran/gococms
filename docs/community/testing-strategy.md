@@ -56,7 +56,7 @@ The `packages/*` libraries lean heavily unit + integration. The `apps/{admin,web
 - **Test runner:** [Pest 3](https://pestphp.com) as the primary DSL, layered on **PHPUnit 11**. Pure PHPUnit `TestCase` classes are permitted for authors who prefer them; both run in the same suite via the shared `phpunit.xml`.
 - **Assertions & doubles:** Pest expectations; Mockery for the rare external-service double.
 - **Fixtures/factories:** `gococms/testing` (dev-only Composer package) provides Mongo document factories, the coroutine harness, the HTTP client, and the SDK test kits.
-- **Static analysis:** PHPStan (level 8, plus the strict-rules extension) and Psalm run as gates — see [Coding Standards](coding-standards.md).
+- **Static analysis:** PHPStan (level max, plus the strict-rules extension) and Psalm run as gates — see [Coding Standards](coding-standards.md).
 - **Style:** PHP-CS-Fixer / PHP_CodeSniffer against PSR-12 + the GOCO ruleset.
 - **Coverage:** `pcov` (fast, line coverage) in CI; Xdebug locally when branch coverage or a debugger is needed.
 - **JS/TS (admin & builder):** Vitest for unit, Playwright for E2E, axe-core for accessibility.
@@ -314,7 +314,7 @@ it('enforces the pages JSON-Schema validator on insert', function () {
 
 it('keeps a cross-collection invariant inside a transaction', function () {
     // publishing a page must also write an audit_logs entry atomically
-    $service = app(\Goco\Content\PageService::class);
+    $service = $this->container->get(\Goco\Content\PageService::class); // resolve via the service container
     $service->publish($this->pageId(), actor: $this->user('editor'));
 
     expect(Repository::for('audit_logs')->count(['action' => 'page.published']))->toBe(1);
@@ -398,7 +398,7 @@ return factory('pages', fn (Faker $f, Tenant $t) => [
     'sections'     => [],
     'version'      => 1,
     'created_by'   => $t->actorId,
-])->state('published', fn () => ['status' => 'published', 'published_at' => now()]);
+])->state('published', fn () => ['status' => 'published', 'published_at' => new \DateTimeImmutable()]);
 ```
 
 ### Per-test isolation & tenant scoping
@@ -571,7 +571,7 @@ jobs:
           tools: composer
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/php-cs-fixer fix --dry-run --diff
-      - run: vendor/bin/phpstan analyse --level=8
+      - run: vendor/bin/phpstan analyse --level=max
       - run: vendor/bin/psalm --no-progress
 
   test:
@@ -598,7 +598,7 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      GOCO_MONGO_URI: mongodb://localhost:27017
+      MONGODB_URI: mongodb://localhost:27017
       GOCO_REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4

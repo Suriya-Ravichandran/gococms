@@ -35,6 +35,12 @@ Before the catalog, the rules that every collection obeys.
 | **Validation** | Every collection ships a JSON-Schema `$jsonSchema` validator applied at `collMod` time by migrations in `scripts/`. |
 | **Tenancy** | Tenant-scoped docs carry `workspace_id` + `website_id`. Global docs (workspaces, users, roles, plugins, themes, jobs) do not. |
 
+> **Note — module-owned collections.** This catalog is the **core** set. Modules may register
+> additional collections that extend it: `auth_tokens` (owned by the [Authentication](../core/authentication.md)
+> module) and `templates` (owned by the [Template Engine](../core/template-engine.md)). Per-tenant
+> **plugin** configuration is *not* a separate collection — it lives in `settings` under a
+> `plugin:<slug>` namespace, mirroring how themes store their settings.
+
 > **Note**
 > Index direction (`1` ascending / `-1` descending) matters only for sort and range scans;
 > for equality it is irrelevant. Compound indexes follow the **ESR rule** — Equality, Sort,
@@ -310,6 +316,9 @@ workspaces may define custom ones. See [Permission System](permission-system.md)
 | `rank` | `int` | Hierarchy weight (owner highest). Used for "can-manage-lower" checks. |
 | `builtin` | `bool` | `true` for the shipped 13 roles; `false` for custom. |
 | `capabilities` | `string[]` | `resource.action` grants, e.g. `pages.publish`. |
+| `inherits` | `string[]` | Role slugs whose capabilities are unioned in (transitive). |
+| `is_default` | `bool` | Assigned automatically to new members of the scope. |
+| `policies` | `string[]` | ABAC policy IDs attached to this role (evaluated by the `PolicyEngine`). |
 | `workspace_id` | `ObjectId` \| `null` | `null` = global built-in; set = workspace-custom role. |
 
 ```json
@@ -324,6 +333,9 @@ workspaces may define custom ones. See [Permission System](permission-system.md)
     "posts.create", "posts.read", "posts.update", "posts.publish",
     "media.create", "media.read", "media.update"
   ],
+  "inherits": ["author"],
+  "is_default": false,
+  "policies": [],
   "workspace_id": null,
   "created_at": { "$date": "2026-01-01T00:00:00Z" },
   "updated_at": { "$date": "2026-01-01T00:00:00Z" },
@@ -1051,7 +1063,7 @@ See [Plugin Engine](../core/plugin-engine.md) and [Plugin SDK](../sdk/plugin-sdk
 |-------|------|-------------|
 | `slug` | `string` | Composer/package slug, globally unique (`gococms/seo-toolkit`). |
 | `name` | `string` | Display name. |
-| `version` | `string` | Installed SemVer. |
+| `package_version` | `string` | Installed SemVer of the plugin package. |
 | `manifest` | `object` | Cached `Plugin::register()` manifest (routes, permissions, hooks). |
 | `activations` | `object[]` | Per-scope state: `{ workspace_id, website_id?, enabled, installed_at, config }`. |
 | `source` | `string` | `marketplace` \| `local` \| `git`. |
@@ -1061,7 +1073,7 @@ See [Plugin Engine](../core/plugin-engine.md) and [Plugin SDK](../sdk/plugin-sdk
   "_id": { "$oid": "6690a1b2c3d4e5f613000001" },
   "slug": "gococms/seo-toolkit",
   "name": "SEO Toolkit",
-  "version": "2.3.1",
+  "package_version": "2.3.1",
   "manifest": { "permissions": ["seo.manage"], "hooks": ["page.rendered", "response.headers"], "routes": true },
   "activations": [
     { "workspace_id": { "$oid": "6690a1b2c3d4e5f601000001" }, "website_id": { "$oid": "6690a1b2c3d4e5f602000001" }, "enabled": true, "installed_at": { "$date": "2026-03-10T00:00:00Z" }, "config": { "sitemap": true } }
@@ -1070,17 +1082,16 @@ See [Plugin Engine](../core/plugin-engine.md) and [Plugin SDK](../sdk/plugin-sdk
   "created_at": { "$date": "2026-03-10T00:00:00Z" },
   "updated_at": { "$date": "2026-07-01T00:00:00Z" },
   "deleted_at": null,
-  "version_doc": 4,
-  "version": "2.3.1",
+  "version": 4,
   "created_by": { "$oid": "6690a1b2c3d4e5f600000001" },
   "updated_by": null
 }
 ```
 
 > **Note**
-> The SemVer package `version` and the base-envelope optimistic-lock counter would collide by name;
-> in practice the envelope counter is stored as the standard `version` integer and the package
-> version is namespaced as `package_version`. The sample above shows both concerns for clarity.
+> Two distinct "versions" live on this document: the base-envelope optimistic-lock counter is the
+> integer `version`, while the installed package SemVer is stored separately as `package_version`
+> (mirroring the [`themes`](#321-themes) collection). They never collide.
 
 **Indexes**
 

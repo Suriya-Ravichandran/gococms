@@ -76,7 +76,7 @@ Widget::register('hero-banner', [
 
     // --- Render callback ---
     'render' => function (array $props, Context $ctx): string {
-        return \Goco\SDK\Theme::view('hero-banner', [
+        return \ZealPHP\App::renderToString('/widgets/hero-banner.php', [
             'headline' => $props['headline'],
             'cta'      => $props['cta'],
             'ctx'      => $ctx,
@@ -118,7 +118,7 @@ Widget::register('pricing-table', function (): array {
             ],
         ],
         'render' => fn (array $p, Context $c): string =>
-            \Goco\SDK\Theme::view('pricing-table', $p + ['ctx' => $c]),
+            \ZealPHP\App::renderToString('/widgets/pricing-table.php', $p + ['ctx' => $c]),
     ];
 });
 ```
@@ -366,7 +366,7 @@ use Goco\Widget\Responsive;
     // Or resolve for a single active breakpoint (e.g. server-side preview at 'lg'):
     $cols = Responsive::at($props['columns'], $ctx->breakpoint());  // int
 
-    return \Goco\SDK\Theme::view('feature-grid', [
+    return \ZealPHP\App::renderToString('/widgets/feature-grid.php', [
         'cols'      => $cols,
         'styleVars' => $vars,
         'ctx'       => $ctx,
@@ -437,7 +437,7 @@ interface Context
     // Enqueue a scoped stylesheet only when this widget actually renders.
     $ctx->enqueueCss('hero-banner', $ctx->url('/widgets/hero-banner/hero-banner.css'));
 
-    return \Goco\SDK\Theme::view('hero-banner', [
+    return \ZealPHP\App::renderToString('/widgets/hero-banner.php', [
         'greeting' => $greeting,
         'headline' => $ctx->e($headline),
         'nonce'    => $ctx->nonce(),
@@ -525,7 +525,7 @@ Resolution order:
     ];
     $props = array_replace_recursive($demo, $props);
 
-    return \Goco\SDK\Theme::view('hero-banner', $props + ['ctx' => $ctx, 'preview' => true]);
+    return \ZealPHP\App::renderToString('/widgets/hero-banner.php', $props + ['ctx' => $ctx, 'preview' => true]);
 },
 ```
 
@@ -657,7 +657,7 @@ return [
     'schema'     => 3,
     'properties' => require __DIR__ . '/properties.php',
     'render'     => function (array $props, Context $ctx): string {
-        return \Goco\SDK\Theme::view('hero-banner', $props + ['ctx' => $ctx]);
+        return \ZealPHP\App::renderToString('/widgets/hero-banner.php', $props + ['ctx' => $ctx]);
     },
     'migrate'    => require __DIR__ . '/migrations.php',
 ];
@@ -835,7 +835,7 @@ Widget::register('callout', [
         $padVars = Responsive::cssVars('--pad', $props['padding'] ?? []);
         $ctx->enqueueCss('callout', $ctx->url('/widgets/callout/callout.css'));
 
-        return \Goco\SDK\Theme::view('callout', [
+        return \ZealPHP\App::renderToString('/widgets/callout.php', [
             'tone'     => $props['tone'] ?? 'info',
             'message'  => $message,          // richtext -> sanitized in template via {{{ }}}
             'action'   => $props['action'] ?? null,
@@ -849,7 +849,7 @@ Widget::register('callout', [
         $props = array_replace_recursive([
             'tone' => 'info', 'message' => '<strong>Heads up!</strong> This is a callout.',
         ], $props);
-        return \Goco\SDK\Theme::view('callout', $props + ['ctx' => $ctx, 'preview' => true]);
+        return \ZealPHP\App::renderToString('/widgets/callout.php', $props + ['ctx' => $ctx, 'preview' => true]);
     },
 ]);
 

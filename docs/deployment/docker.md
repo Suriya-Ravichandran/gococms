@@ -76,7 +76,7 @@ ENV OPENSWOOLE_VERSION=22.1.2
 RUN apt-get update && apt-get install -y --no-install-recommends \
       git unzip libssl-dev libcurl4-openssl-dev libpcre3-dev \
       libbrotli-dev libnghttp2-dev ca-certificates \
-    && docker-php-ext-install pdo_mysql sockets \
+    && docker-php-ext-install sockets \
     # OpenSwoole 22.1+ with HTTP/2, OpenSSL, cURL hooks
     && pecl install openswoole-${OPENSWOOLE_VERSION} \
     && docker-php-ext-enable openswoole \

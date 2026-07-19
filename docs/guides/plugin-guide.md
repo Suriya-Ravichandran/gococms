@@ -102,7 +102,7 @@ The manifest is the plugin's identity card. The [Plugin Engine](../core/plugin-e
   "provider": "Goco\\ContactForm\\ContactFormProvider",
   "stability": "stable",
   "requires": {
-    "goco/core": "^0.9",
+    "gococms/core": "^0.9",
     "php": ">=8.4",
     "ext-mongodb": "*",
     "plugins": {
@@ -263,7 +263,7 @@ final class ContactFormWidget
                 // Allow other plugins to alter the rendered fields.
                 $props['fields'] = Hook::apply('contact-form.fields', $props['fields'], $ctx);
 
-                return \Goco\SDK\Theme::view('goco/contact-form::widget/contact-form', $props);
+                return \ZealPHP\App::renderToString('/plugins/contact-form/views/widget/contact-form.php', $props);
             },
         ];
     }
@@ -606,7 +606,7 @@ The admin controller renders and saves them:
 namespace Goco\ContactForm\Http;
 
 use Goco\SDK\Plugin;
-use Goco\SDK\Theme;
+use ZealPHP\App;
 use Goco\ContactForm\Repository\SubmissionRepository;
 
 final class AdminController
@@ -619,7 +619,7 @@ final class AdminController
             page:    (int) ($request->query('page') ?? 1),
             status:  $request->query('status')   // new | read | spam | archived
         );
-        return Theme::view('goco/contact-form::admin/submissions', [
+        return App::renderToString('/plugins/contact-form/views/admin/submissions.php', [
             'submissions' => $result['items'],
             'pagination'  => $result['pagination'],
             'activeTab'   => $request->query('status') ?? 'new',
@@ -628,7 +628,7 @@ final class AdminController
 
     public function settings($request, $response): string
     {
-        return Theme::view('goco/contact-form::admin/settings', [
+        return App::renderToString('/plugins/contact-form/views/admin/settings.php', [
             'schema'   => Plugin::settingsSchema('goco/contact-form'),
             'values'   => Plugin::settings('goco/contact-form'),
             'csrf'     => $request->csrfToken(),

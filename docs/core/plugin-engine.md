@@ -83,7 +83,7 @@ The engine runs inside the **ZealPHP / OpenSwoole** application (see [ZealPHP Fo
 
 ## 5. Data Model (MongoDB Collections & Indexes)
 
-The engine owns two collections: `plugins` (registry + state) and `plugin_settings` (per-tenant configuration). Both follow the [canonical document contract](../architecture/data-model.md) (`_id`, `created_at`, `updated_at`, `deleted_at`, `version`, `created_by`, `updated_by`; tenant docs add `workspace_id`, `website_id`).
+The engine owns the `plugins` collection (registry + activation state; see the canonical [`plugins`](../architecture/data-model.md#320-plugins) catalog entry). Per-tenant plugin **settings** are **not** a separate collection — they live in the shared `settings` collection under a `plugin:<slug>` namespace (mirroring how themes store settings). Documents follow the [canonical document contract](../architecture/data-model.md) (`_id`, `created_at`, `updated_at`, `deleted_at`, `version`, `created_by`, `updated_by`; tenant docs add `workspace_id`, `website_id`).
 
 ### 5.1 `plugins`
 
@@ -121,16 +121,16 @@ db.plugins.createIndex({ deleted_at: 1 }, { name: "soft_delete", sparse: true })
 
 A `website_id` of `null` denotes a **workspace-wide** plugin (active for every website in the workspace). The unique index treats `null` as a distinct key, so a plugin can be workspace-wide *and* have per-website overrides without collision.
 
-### 5.2 `plugin_settings`
+### 5.2 Per-tenant settings (in `settings`)
 
-Typed, per-tenant settings for a plugin, validated against the plugin's declared setting schema.
+Typed, per-tenant plugin settings are stored in the canonical [`settings`](../architecture/data-model.md#322-settings) collection under a `plugin:<slug>` namespace — not a dedicated collection — validated against the plugin's declared setting schema. `settings` uses a **natural string `_id`** encoding scope + key, so a plugin's per-website settings are a single point read:
 
 ```json
 {
-  "_id": "ObjectId",
+  "_id": "plugin:acme/seo-booster:ws_12:web_88",
+  "namespace": "plugin:acme/seo-booster",
   "workspace_id": "ObjectId",
   "website_id": "ObjectId",
-  "slug": "acme/seo-booster",
   "values": { "default_meta_robots": "index,follow", "sitemap_ping": true },
   "schema_version": 3,
   "created_at": "ISODate", "updated_at": "ISODate", "deleted_at": null,
@@ -138,11 +138,7 @@ Typed, per-tenant settings for a plugin, validated against the plugin's declared
 }
 ```
 
-**Indexes:**
-
-```javascript
-db.plugin_settings.createIndex({ workspace_id: 1, website_id: 1, slug: 1 }, { unique: true, name: "uniq_tenant_plugin" })
-```
+No dedicated index is required — reads and writes are keyed by the natural `_id`. See the [`settings`](../architecture/data-model.md#322-settings) catalog entry.
 
 ### 5.3 JSON-Schema Validator (excerpt)
 
@@ -155,7 +151,7 @@ db.runCommand({
     properties: {
       slug: { bsonType: "string", pattern: "^[a-z0-9-]+/[a-z0-9-]+$" },
       installed_version: { bsonType: "string", pattern: "^\\d+\\.\\d+\\.\\d+" },
-      state: { enum: ["discovered", "installed", "active", "inactive", "failed"] }
+      state: { enum: ["discovered", "installed", "active", "inactive", "uninstalled", "failed"] }
     }
   }},
   validationLevel: "moderate"

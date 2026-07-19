@@ -478,21 +478,21 @@ Layouts are plain PHP views rendered by `App::render()`. The engine injects `$re
 <?php
 // themes/aurora/layouts/default.php
 /** @var array $page, array $regions, \Goco\Theme\AssetBundle $assets, \Goco\Theme\Customizer $customizer */
-use Goco\SDK\App as View;
+use ZealPHP\App;
 ?>
 <!doctype html>
 <html lang="<?= $page['locale'] ?? 'en' ?>" data-theme="<?= $customizer->get('dark_mode') ? 'auto' : 'light' ?>">
-<?php View::include('partials/head.php', compact('page', 'assets', 'customizer')); ?>
+<?php App::include('partials/head.php', compact('page', 'assets', 'customizer')); ?>
 <body class="min-h-screen bg-surface text-ink antialiased">
 
-  <?php View::include('partials/header.php', ['region' => $regions['header'] ?? '']); ?>
+  <?php App::include('partials/header.php', ['region' => $regions['header'] ?? '']); ?>
 
   <div class="mx-auto grid max-w-container gap-8 px-4 py-10 lg:grid-cols-[1fr_20rem]">
     <main class="prose-aurora"><?= $regions['content'] ?? '' ?></main>
     <aside class="space-y-6"><?= $regions['sidebar'] ?? '' ?></aside>
   </div>
 
-  <?php View::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
+  <?php App::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
   <?= $assets->scripts() ?>
 </body>
 </html>
@@ -504,13 +504,13 @@ use Goco\SDK\App as View;
 <?php
 // themes/aurora/layouts/blog.php
 /** @var array $page, array $regions, array $posts */
-use Goco\SDK\App as View;
+use ZealPHP\App;
 ?>
 <!doctype html>
 <html lang="<?= $page['locale'] ?? 'en' ?>">
-<?php View::include('partials/head.php', get_defined_vars()); ?>
+<?php App::include('partials/head.php', get_defined_vars()); ?>
 <body class="min-h-screen bg-surface text-ink">
-  <?php View::include('partials/header.php', ['region' => $regions['header'] ?? '']); ?>
+  <?php App::include('partials/header.php', ['region' => $regions['header'] ?? '']); ?>
 
   <div class="mx-auto grid max-w-container gap-10 px-4 py-12 lg:grid-cols-[1fr_18rem]">
     <section class="space-y-10">
@@ -519,7 +519,7 @@ use Goco\SDK\App as View;
     <aside class="space-y-8"><?= $regions['blog-sidebar'] ?? '' ?></aside>
   </div>
 
-  <?php View::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
+  <?php App::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
   <?= $assets->scripts() ?>
 </body>
 </html>
@@ -531,11 +531,11 @@ use Goco\SDK\App as View;
 <?php
 // themes/aurora/layouts/landing.php
 /** @var array $regions */
-use Goco\SDK\App as View;
+use ZealPHP\App;
 ?>
 <!doctype html>
 <html lang="<?= $page['locale'] ?? 'en' ?>">
-<?php View::include('partials/head.php', get_defined_vars()); ?>
+<?php App::include('partials/head.php', get_defined_vars()); ?>
 <body class="bg-surface text-ink">
   <header class="relative isolate overflow-hidden">
     <?= $regions['hero'] ?? '' /* hero-banner widget */ ?>
@@ -551,7 +551,7 @@ use Goco\SDK\App as View;
     </div>
   </section>
 
-  <?php View::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
+  <?php App::include('partials/footer.php', ['region' => $regions['footer'] ?? '']); ?>
   <?= $assets->scripts() ?>
 </body>
 </html>

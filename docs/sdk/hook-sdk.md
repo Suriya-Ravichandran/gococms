@@ -21,12 +21,12 @@ The entire public surface is a set of static methods on `Goco\SDK\Hook`. All nam
 
 | Method | Alias | Kind | Signature |
 | --- | --- | --- | --- |
-| `listen` | `on` | action/filter register | `Hook::listen(string $action, callable $cb, int $priority = 10): string` |
+| `listen` | `on` | action/filter register | `Hook::listen(string $action, callable $cb, int $priority = 10, ?string $tag = null): void` |
 | `dispatch` | `do` | action fire | `Hook::dispatch(string $action, mixed ...$args): void` |
-| `filter` | — | filter register | `Hook::filter(string $name, callable $cb, int $priority = 10): string` |
+| `filter` | — | filter register | `Hook::filter(string $name, callable $cb, int $priority = 10, ?string $tag = null): void` |
 | `apply` | — | filter run | `Hook::apply(string $name, mixed $value, mixed ...$args): mixed` |
 | `dispatchAsync` | — | action fire (task worker) | `Hook::dispatchAsync(string $action, mixed ...$args): int` |
-| `remove` | — | unregister | `Hook::remove(string $name, string $id): bool` |
+| `remove` | — | unregister | `Hook::remove(string $name, string $tag): bool` |
 | `removeAll` | — | unregister | `Hook::removeAll(string $name): int` |
 | `has` | — | introspection | `Hook::has(string $name): bool` |
 | `listeners` | — | introspection | `Hook::listeners(string $name): array` |
@@ -41,7 +41,7 @@ The entire public surface is a set of static methods on `Goco\SDK\Hook`. All nam
 
 ### Actions with `listen` / `on`
 
-`Hook::listen()` registers a callback against an action name and returns an opaque **listener id** (used later for removal). Callback arguments are the variadic `...$args` passed to `Hook::dispatch()`. Return values are discarded.
+`Hook::listen()` registers a callback against an action name and returns `void`. To support later removal, pass an explicit `$tag` at registration (see [Removing Listeners](#removing-listeners)). Callback arguments are the variadic `...$args` passed to `Hook::dispatch()`. Return values are discarded.
 
 ```php
 use Goco\SDK\Hook;
@@ -166,21 +166,22 @@ App::onWorkerStart(function ($server, $wid) {
 
 ## Removing Listeners
 
-Registration returns an id; keep it to remove precisely. This matters for plugin deactivation, where you must undo everything you registered.
+`Hook::listen()` and `Hook::filter()` return `void`. To remove a listener later, register it with an explicit **tag** — a stable string handle you choose, conventionally namespaced by your plugin slug. This matters for plugin deactivation, where you must undo everything you registered.
 
 ```php
 use Goco\SDK\Hook;
 
-$id = Hook::listen('request.received', $tracer);
+// Register with a tag...
+Hook::listen('request.received', $tracer, tag: 'acme-crm:tracer');
 
-// Later — remove exactly that listener.
-Hook::remove('request.received', $id);
+// ...later, remove exactly that listener by tag.
+Hook::remove('request.received', 'acme-crm:tracer');
 
 // Remove every listener on a name (use sparingly; affects other plugins).
 $count = Hook::removeAll('acme-crm.contact.synced');
 ```
 
-Anonymous closures cannot be matched by reference, which is why `remove()` takes the returned id rather than the callable. Plugins should track their ids on the plugin object and unregister them in the deactivation lifecycle hook:
+Anonymous closures cannot be matched by reference, which is why `remove()` matches on the **tag** you supplied at registration rather than the callable itself. Register everything under a plugin-namespaced tag and drop them in the deactivation lifecycle hook:
 
 ```php
 final class AcmeCrmPlugin
@@ -190,14 +191,19 @@ final class AcmeCrmPlugin
 
     public function boot(): void
     {
-        $this->hooks[] = ['content.published', Hook::listen('content.published', [$this, 'syncContact'])];
-        $this->hooks[] = ['user.login',        Hook::on('user.login',            [$this, 'touchLastSeen'])];
+        Hook::listen('content.published', [$this, 'syncContact'],   tag: 'acme-crm:sync');
+        Hook::on('user.login',            [$this, 'touchLastSeen'], tag: 'acme-crm:seen');
+
+        $this->hooks = [
+            ['content.published', 'acme-crm:sync'],
+            ['user.login',        'acme-crm:seen'],
+        ];
     }
 
     public function deactivate(): void
     {
-        foreach ($this->hooks as [$name, $id]) {
-            Hook::remove($name, $id);
+        foreach ($this->hooks as [$name, $tag]) {
+            Hook::remove($name, $tag);
         }
         $this->hooks = [];
     }

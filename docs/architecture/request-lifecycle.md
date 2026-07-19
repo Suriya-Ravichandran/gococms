@@ -121,7 +121,7 @@ Traefik handles, at the edge:
 Routing is configured with Docker labels on the `gococms` service (the Docker provider reads them dynamically — no restart needed to add a domain):
 
 ```yaml
-# docker/compose.yaml (excerpt)
+# docker-compose.yml (excerpt)
 services:
   gococms:
     image: gococms/core:latest

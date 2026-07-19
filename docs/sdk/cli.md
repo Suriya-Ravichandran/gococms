@@ -50,7 +50,7 @@ Global flags accepted by **every** command:
 | `--website=<id>` | Scope tenant-aware commands to a `website_id`. |
 | `--workspace=<id>` | Scope tenant-aware commands to a `workspace_id`. |
 
-Exit codes are POSIX-conventional and CI-friendly: `0` success, `1` general failure, `2` invalid usage/arguments, `3` environment/connectivity failure (Mongo/Redis unreachable), `130` interrupted (SIGINT).
+Exit codes are POSIX-conventional and CI-friendly: `0` success, `1` general failure, `2` invalid usage/arguments, `3` misconfiguration, `4` dependency unavailable (Mongo/Redis unreachable), `130` interrupted (SIGINT). See the [CLI Reference](../reference/cli-reference.md#exit-codes) for the full table.
 
 ---
 

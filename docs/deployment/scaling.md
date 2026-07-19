@@ -161,7 +161,7 @@ Because sessions and cache are in Redis, Traefik uses plain **round-robin / leas
 ### 4.2 Scaling Replicas with Docker Compose
 
 ```yaml
-# docker/compose.yaml (excerpt)
+# docker-compose.yml (excerpt)
 services:
   gococms:
     image: gococms/core:latest

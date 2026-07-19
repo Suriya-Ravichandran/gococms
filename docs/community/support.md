@@ -54,8 +54,8 @@ Discussions are preferred over Issues for anything that isn't a confirmed defect
 
 Real-time help, quick questions, and pairing happen in community chat.
 
-- **Discord:** `https://discord.gg/gococms` *(placeholder — confirm the live invite in the [repository README](https://github.com/gococms/core))*
-- **Matrix:** `#gococms:matrix.org` *(placeholder — bridged to Discord)*
+- **Discord:** the community chat invite is published in the [repository README](https://github.com/gococms/core).
+- **Matrix:** `#gococms:matrix.org`, bridged to the Discord community.
 
 Chat is great for unblocking quickly, but it is ephemeral. If your question and its answer would help others, please also post it as a **Discussion** or on **Stack Overflow** so it's searchable. Never paste secrets (API keys, JWT signing secrets, `.env` contents, MongoDB/Redis credentials) into chat.
 
@@ -160,7 +160,7 @@ Community channels are not a substitute for a support contract. For teams that n
 - **Training & architecture reviews.**
 
 > **Note**
-> Commercial support and the certified **partner directory** are being established. Contact and partner details will be published on the project website and the [repository README](https://github.com/gococms/core). *(Placeholder — confirm the current offering there.)* Vendors interested in becoming partners should watch [Governance](./governance.md) and the [Marketplace overview](../marketplace/overview.md).
+> Commercial support and the certified **partner directory** are being established. Contact and partner details will be published on the project website and the [repository README](https://github.com/gococms/core). Vendors interested in becoming partners should watch [Governance](./governance.md) and the [Marketplace overview](../marketplace/overview.md).
 
 ---
 

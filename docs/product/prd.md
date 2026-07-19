@@ -124,7 +124,7 @@ graph TD
 
 ## 6. Feature Epics
 
-Each epic states the **user value**, a short **scope**, and **acceptance-level** criteria (product-level "done," not implementation detail). Phase mapping is summarized in [§7](#7-mvp-scope-vs-phases) and detailed in the [Roadmap](../roadmap.md).
+Each epic states the **user value**, a short **scope**, and **acceptance-level** criteria (product-level "done," not implementation detail). Delivery-milestone mapping is summarized in [§7](#7-mvp-scope-vs-delivery-milestones) and reconciled with the feature phases in the [Roadmap](../roadmap.md).
 
 ### E1 — Visual Page Builder
 **Value:** Editors compose pages visually against the canonical hierarchy *Layout → Section → Container → Row → Column → Widget*, with no code.
@@ -235,11 +235,11 @@ Each epic states the **user value**, a short **scope**, and **acceptance-level**
 
 ---
 
-## 7. MVP Scope vs Phases
+## 7. MVP Scope vs Delivery Milestones
 
-Phases map to the [Roadmap](../roadmap.md). The rule: **the MVP must let one operator run one deployment with multiple tenant websites, edited visually, extended by developers, deployed securely.** Anything not required to prove that loop is deferred.
+These **delivery milestones** (M0–M3) sequence the epics toward and beyond the MVP. They map onto the *feature phases* in the [Roadmap](../roadmap.md) as follows: **M0 Foundation → Roadmap Phase 1** (Core Framework); **M1 MVP → Roadmap Phases 1–2** (Core + Presentation); **M2 Platform → Roadmap Phases 3–4** (Extensibility + Intelligence); **M3 Ecosystem → Roadmap Phases 4–5** (Intelligence + Enterprise). The rule: **the MVP must let one operator run one deployment with multiple tenant websites, edited visually, extended by developers, deployed securely.** Anything not required to prove that loop is deferred.
 
-| Epic | Phase 0 — Foundation | Phase 1 — MVP | Phase 2 — Platform | Phase 3 — Ecosystem |
+| Epic | M0 — Foundation | M1 — MVP | M2 — Platform | M3 — Ecosystem |
 |------|:---:|:---:|:---:|:---:|
 | Runtime, routing, data layer, auth ([core](../architecture/overview.md)) | ● | | | |
 | E1 Visual Page Builder | | ● | ◐ (advanced blocks) | |
@@ -251,14 +251,14 @@ Phases map to the [Roadmap](../roadmap.md). The rule: **the MVP must let one ope
 | E5 Blog Engine | | ● | | |
 | E4 Plugin Engine | | ◐ (local) | ● | |
 | E4 Marketplace | | | ◐ | ● |
-| E6 Database/Collection Builder | | | ● | ◐ (GraphQL) |
+| E6 Database/Collection Builder | | | ● | ◐ (GraphQL, *experimental*) |
 | E11 Search | | ◐ (Mongo text) | ● (providers) | |
 | E7 AI Platform | | | ● | ◐ |
 | E12 Analytics | | | ◐ | ● |
 
 Legend: ● primary deliverable · ◐ partial / incremental.
 
-**MVP definition of done (Phase 1 exit):**
+**MVP definition of done (M1 exit):**
 - A fresh Docker deployment brings up gococms + mongodb + redis + traefik with auto-HTTPS.
 - An operator creates a workspace and a website, maps a custom domain, and assigns an editor.
 - The editor builds and publishes a themed page visually and publishes a blog post.

@@ -30,6 +30,7 @@ docs sites, portals, LMS, and eCommerce — visually, without writing HTML/CSS/J
 | Object storage | Driver interface — **Local**, **MinIO**, **Amazon S3** |
 | Search | Provider interface — **MongoDB**, **Meilisearch**, **OpenSearch** |
 | Edge / proxy | **Traefik** (automatic HTTPS, wildcard/multi-domain, HTTP/3) |
+| Frontend / UI | **htmx** hypermedia over server-rendered HTML — `App::fragment()` regions + SSE, progressively enhanced; no SPA framework required for content or admin surfaces |
 | Packaging | **Docker-first** modular monorepo |
 
 ---

@@ -27,7 +27,7 @@ GOCO CMS delivers:
 - A **Widget / Theme / Plugin** extensibility model exposed through the `Goco\SDK` facades.
 - A **Blog Engine**, **Database Builder** (dynamic collections), and an **AI Platform**.
 - **Multi-tenant** hosting (workspace/website isolation) with **RBAC + optional ABAC**.
-- First-class **REST, file-based REST, GraphQL, WebSocket, and SSE** interfaces plus the `goco` CLI.
+- First-class **REST, file-based REST, WebSocket, and SSE** interfaces (with an optional, *experimental* **GraphQL** layer) plus the `goco` CLI.
 
 Out of scope for this SRS: marketplace commerce policy (see [Marketplace Overview](../marketplace/overview.md)), governance process (see [Governance](../community/governance.md)), and deployment runbooks (see [Deployment Guide](../deployment/deployment-guide.md)).
 
@@ -233,7 +233,7 @@ See [Multi-Tenancy](../architecture/multi-tenancy.md).
 | **FR-API-2** | The system **MUST** support **file-based REST**: placing `api/foo/bar.php` **MUST** expose `GET /api/foo/bar` returning JSON. | Must |
 | **FR-API-3** | The API **MUST** enforce authentication (JWT/session) and capability checks on every non-public endpoint. | Must |
 | **FR-API-4** | The API **MUST** apply rate limiting via the ZealPHP `RateLimit` middleware backed by Redis; exceeding the limit **MUST** return HTTP 429 with a `Retry-After` header. | Must |
-| **FR-API-5** | The system **MUST** provide a **GraphQL** endpoint for content and collection queries with field-level authorization. | Should |
+| **FR-API-5** | The system **MAY** provide an optional, *experimental* **GraphQL** endpoint for content and collection queries with field-level authorization. | May |
 | **FR-API-6** | The system **MUST** provide **WebSocket** endpoints (`$app->ws(...)`) for realtime features (e.g., builder presence, notifications). | Should |
 | **FR-API-7** | The system **MUST** provide **SSE** streams (generator + `$response->sse()`) for one-way realtime updates. | Should |
 | **FR-API-8** | The `goco` CLI **MUST** cover project lifecycle and code generation (widgets, themes, plugins, collections) and return non-zero exit codes on failure. | Must |
@@ -356,10 +356,12 @@ return ['status' => 'ok', 'time' => time()];
 - **IR-REST-1** — Endpoints **MUST** authenticate and authorize per [FR-API-3](#310-programmatic-interfaces-fr-api).
 - **IR-REST-2** — Error responses **MUST** use a consistent JSON envelope with an HTTP status that matches the error class.
 
-### 5.2 GraphQL
+### 5.2 GraphQL (optional, experimental)
 
-- **IR-GQL-1** — A single GraphQL endpoint **MUST** expose queries/mutations for content and collections with field-level capability checks.
-- **IR-GQL-2** — Query depth/complexity **MUST** be bounded to prevent abusive queries (returns a controlled error when exceeded).
+> GraphQL is an **optional, experimental** interface layered over the document data model — not a core interface. REST, file-based REST, WebSocket, and SSE are the canonical programmatic surfaces.
+
+- **IR-GQL-1** — The optional GraphQL layer, **when enabled**, exposes a single endpoint for queries/mutations over content and collections with field-level capability checks.
+- **IR-GQL-2** — **When the GraphQL layer is enabled**, query depth/complexity **MUST** be bounded to prevent abusive queries (returns a controlled error when exceeded).
 
 ### 5.3 WebSocket
 

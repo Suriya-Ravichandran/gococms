@@ -713,7 +713,7 @@ See [Plugin SDK](../sdk/plugin-sdk.md) and the [Plugin Guide](../guides/plugin-g
 - **Content schema** — `posts.content.format` is versioned; a lazy upcaster converts legacy `html` blocks to `blocks` on first edit, so upgrades never require a full-table rewrite.
 - **Deprecations** — removed hooks/capabilities emit a `deprecated` log for one minor cycle before removal (Semantic Versioning; Conventional Commits gate the changelog).
 - **Feeds** — feed URL shapes are frozen; new formats are additive.
-- **Zero-downtime** — rolling worker restarts (`restart` via the ZealPHP CLU / Docker healthchecks) drain coroutines gracefully; the scheduler lock ensures no double-publish during the rollover.
+- **Zero-downtime** — rolling worker restarts (`restart` via the ZealPHP CLI / Docker healthchecks) drain coroutines gracefully; the scheduler lock ensures no double-publish during the rollover.
 
 See [Deployment Guide](../deployment/deployment-guide.md) and [Configuration](../getting-started/configuration.md).
 

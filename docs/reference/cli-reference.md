@@ -54,7 +54,7 @@ These options are accepted by **every** command and are parsed before the comman
 | `--no-interaction` | `-n` | off | Never prompt; use defaults or fail. Required for CI and non-TTY contexts. |
 | `--no-ansi` | | auto | Disables colored output (auto-detected for non-TTY). Use `--ansi` to force. |
 | `--config=<path>` | `-c` | `./goco.json` | Overrides the CLI configuration file path. |
-| `--version` | `-V` | | Prints the `goco` and `gococms/core` versions, then exits `0`. |
+| `--version` | `-V` | | Prints the `goco`, `gococms/core`, ZealPHP, and PHP versions, then exits `0`. |
 | `--help` | `-h` | | Prints help for the resolved command (or global help), then exits `0`. |
 
 > **Tip**

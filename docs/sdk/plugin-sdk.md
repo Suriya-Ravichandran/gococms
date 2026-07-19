@@ -243,9 +243,9 @@ private function registerWidgets(): void
         'category'   => 'marketing',
         'icon'       => 'mail-plus',
         'properties' => [
-            'heading'     => ['type' => 'string', 'default' => 'Subscribe'],
+            'heading'     => ['type' => 'text', 'default' => 'Subscribe'],
             'list_id'     => ['type' => 'select', 'source' => 'newsletter.lists', 'required' => true],
-            'double_optin'=> ['type' => 'boolean', 'default' => true],
+            'double_optin'=> ['type' => 'toggle', 'default' => true],
         ],
         'render' => [\Acme\Newsletter\Widget\SignupWidget::class, 'render'],
     ]);
@@ -382,7 +382,7 @@ private function registerSettings(): void
             'delivery' => [
                 'label'  => 'Delivery',
                 'fields' => [
-                    'from_name'  => ['type' => 'string', 'label' => 'From name', 'default' => 'Acme'],
+                    'from_name'  => ['type' => 'text', 'label' => 'From name', 'default' => 'Acme'],
                     'from_email' => ['type' => 'email',  'label' => 'From address', 'required' => true],
                     'batch_size' => ['type' => 'integer','label' => 'Batch size', 'default' => 200, 'min' => 1, 'max' => 2000],
                     'provider'   => ['type' => 'select', 'options' => ['smtp' => 'SMTP', 'ses' => 'Amazon SES']],
@@ -391,7 +391,7 @@ private function registerSettings(): void
             'optin' => [
                 'label'  => 'Opt-in',
                 'fields' => [
-                    'double_optin' => ['type' => 'boolean', 'label' => 'Require confirmation', 'default' => true],
+                    'double_optin' => ['type' => 'toggle', 'label' => 'Require confirmation', 'default' => true],
                     'consent_text' => ['type' => 'richtext', 'label' => 'Consent statement'],
                 ],
             ],

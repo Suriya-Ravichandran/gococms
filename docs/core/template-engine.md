@@ -171,7 +171,7 @@ The **Custom** adapter is a no-op mapping (returns the author's own class string
 
 ## 5. Data Model (MongoDB collections & indexes)
 
-Template packages live on disk under `templates/`, but their *installed, resolved* state is registered in MongoDB so tenants can enable, version-pin, and configure them. The engine reuses the canonical `templates` and `settings` collections (see [data-model.md](../architecture/data-model.md)).
+Template packages live on disk under `templates/`, but their *installed, resolved* state is registered in MongoDB so tenants can enable, version-pin, and configure them. The engine owns the `templates` collection — a **module-owned collection** that extends the core [Data Model](../architecture/data-model.md) catalog — and reuses the shared `settings` collection.
 
 ### 5.1 `templates` collection
 
@@ -182,7 +182,7 @@ Template packages live on disk under `templates/`, but their *installed, resolve
   website_id: ObjectId | null,     // null = available to all websites in workspace
   slug: "aurora",
   name: "Aurora",
-  version: "1.4.0",                // installed version (SemVer)
+  package_version: "1.4.0",        // installed version (SemVer)
   kind: "template",                // distinguishes from theme rows sharing infra
   framework: { adapter: "tailwind", version: "3.4" },
   layouts: [ { id: "landing", regions: ["header","hero","main","cta","footer"] } ],
@@ -195,7 +195,7 @@ Template packages live on disk under `templates/`, but their *installed, resolve
   installed_by: ObjectId,
   // envelope fields
   created_at: ISODate, updated_at: ISODate, deleted_at: null,
-  version_doc: 3, created_by: ObjectId, updated_by: ObjectId
+  version: 3, created_by: ObjectId, updated_by: ObjectId
 }
 ```
 
@@ -208,7 +208,7 @@ Site-level overrides (chosen layout per page type, adapter options, feature flag
 ```javascript
 db.templates.createIndex({ workspace_id: 1, website_id: 1, slug: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } })
 db.templates.createIndex({ workspace_id: 1, status: 1 })
-db.templates.createIndex({ slug: 1, version: 1 })
+db.templates.createIndex({ slug: 1, package_version: 1 })
 db.templates.createIndex({ "framework.adapter": 1 })
 db.templates.createIndex({ updated_at: -1 })
 ```

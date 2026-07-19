@@ -107,7 +107,7 @@ Logical dumps are portable across versions and storage engines and are the backb
 # Consistent logical dump of the whole deployment DB, gzipped, with oplog.
 docker compose exec -T mongodb mongodump \
   --uri="mongodb://mongodb:27017/?replicaSet=rs0" \
-  --db=gococms \
+  --db=goco \
   --oplog \
   --gzip \
   --numParallelCollections=4 \
@@ -122,7 +122,7 @@ Restore a logical dump:
 # Full restore into a clean database. --drop replaces existing collections.
 docker compose exec -T mongodb mongorestore \
   --uri="mongodb://mongodb:27017/?replicaSet=rs0" \
-  --nsInclude="gococms.*" \
+  --nsInclude="goco.*" \
   --drop \
   --gzip \
   --oplogReplay \
@@ -135,14 +135,14 @@ Restore a **single collection** (e.g. a designer dropped `widgets`):
 ```bash
 docker compose exec -T mongodb mongorestore \
   --uri="mongodb://mongodb:27017/?replicaSet=rs0" \
-  --nsInclude="gococms.widgets" \
+  --nsInclude="goco.widgets" \
   --drop \
   --gzip \
   --archive=/backup/gococms-20260718T030000Z.archive.gz
 ```
 
 > **Warning**
-> `--drop` deletes the target collection before restoring. Never run a full `--drop` restore against a live production database without confirming you are restoring the correct archive — restore into a scratch database first (`--nsFrom="gococms.*" --nsTo="gococms_verify.*"`) and diff.
+> `--drop` deletes the target collection before restoring. Never run a full `--drop` restore against a live production database without confirming you are restoring the correct archive — restore into a scratch database first (`--nsFrom="goco.*" --nsTo="goco_verify.*"`) and diff.
 
 ### Point-in-time recovery (PITR) via the oplog
 
@@ -407,7 +407,7 @@ Encrypt on the way out, decrypt on the way in:
 
 ```bash
 # Encrypt a mongodump stream directly to the vault — no plaintext on disk.
-mongodump --archive --gzip --oplog --db=gococms \
+mongodump --archive --gzip --oplog --db=goco \
   | age -r "$(cat /run/secrets/backup_age_pub)" \
   | aws s3 cp - s3://gococms-backups/mongo/gococms-$(date -u +%Y%m%dT%H%M%SZ).archive.gz.age \
       --sse aws:kms --sse-kms-key-id alias/gococms-backups
@@ -528,12 +528,12 @@ Runbooks are step-by-step, copy-pasteable, and rehearsed. Under pressure, follow
 2. **Pinpoint the moment** of damage from `audit_logs` — find the offending operation's timestamp.
 3. **Restore into a scratch DB** (never straight over production):
    ```bash
-   mongorestore --nsFrom="gococms.pages" --nsTo="gococms_recover.pages" \
+   mongorestore --nsFrom="goco.pages" --nsTo="goco_recover.pages" \
      --gzip --archive=/backup/gococms-<pre-incident>.archive.gz
    ```
 4. If sub-hour precision is needed, **replay oplog** into the scratch DB up to `--oplogLimit=<ts>`.
 5. **Verify** the scratch data (counts, spot-check documents).
-6. **Merge back**: copy the recovered documents into production (`goco restore:merge --from=gococms_recover --collection=pages --scope=website:<id>`), or swap collections during a brief window.
+6. **Merge back**: copy the recovered documents into production (`goco restore:merge --from=goco_recover --collection=pages --scope=website:<id>`), or swap collections during a brief window.
 7. `goco media:reconcile` if media references changed.
 8. **Lift maintenance mode.** Record the incident.
 
@@ -597,7 +597,7 @@ docker compose exec -T gococms goco tenant:export \
 Under the hood the export filters every tenant-scoped collection by both IDs:
 
 ```bash
-mongodump --db=gococms --gzip --archive \
+mongodump --db=goco --gzip --archive \
   --query='{ "workspace_id": "w_123", "website_id": "s_456" }' \
   # ...repeated per tenant-scoped collection; global collections excluded...
 ```

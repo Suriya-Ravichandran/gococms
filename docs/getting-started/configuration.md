@@ -18,7 +18,7 @@ GOCO's configuration obeys four principles:
 4. **Tenant-aware.** Infrastructure config (DB, Redis, storage) is process-global. Product config (site name, locale, SEO defaults, mail-from, feature toggles) can be **overridden per workspace and per website** via the `settings` collection, so one running process serves many tenants with different behavior. See [Multi-Tenancy](../architecture/multi-tenancy.md).
 
 > **Note**
-> GOCO never mutates process global state for config. `App::superglobals(false)` is set in `app.php`, and per-request/per-coroutine values (locale, active website, resolved tenant) live in [`Goco\G` / RequestContext](../architecture/request-lifecycle.md), never in `$_ENV`.
+> GOCO never mutates process global state for config. `App::superglobals(false)` is set in `app.php`, and per-request/per-coroutine values (locale, active website, resolved tenant) live in [`Goco\G` / RequestContext](../architecture/request-lifecycle.md) (GOCO's coroutine-isolated wrapper over `\ZealPHP\G`), never in `$_ENV`.
 
 ---
 
@@ -145,7 +145,7 @@ goco key:generate            # writes APP_KEY into .env
 
 ```env
 MONGODB_URI=mongodb://gococms:secret@mongodb:27017/?authSource=admin&replicaSet=rs0
-MONGODB_DB=gococms
+MONGODB_DB=goco
 MONGODB_POOL_SIZE=16
 MONGODB_READ_CONCERN=majority
 MONGODB_WRITE_CONCERN=majority
@@ -518,7 +518,7 @@ APP_KEY=base64:REPLACE_WITH_goco_key_generate
 APP_MODE=coroutine
 
 MONGODB_URI=mongodb://mongodb:27017/?replicaSet=rs0
-MONGODB_DB=gococms
+MONGODB_DB=goco
 
 REDIS_URL=redis://redis:6379/0
 

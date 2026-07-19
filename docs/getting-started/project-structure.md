@@ -110,12 +110,14 @@ Each folder under `apps/` is a **complete, bootable ZealPHP server**. They share
 
 | App | Surface | Typical Traefik host | Notes |
 |-----|---------|----------------------|-------|
-| `website` | Public HTML, themes, widgets, SSE | `example.com`, tenant domains | The renderer. Read-heavy, cache-first. |
-| `admin` | Authenticated dashboard, Page Builder | `admin.example.com` | Requires session; RBAC-gated. |
+| `website` | Public HTML (htmx), themes, widgets, SSE | `example.com`, tenant domains | The renderer. Read-heavy, cache-first. |
+| `admin` | Authenticated dashboard, Page Builder (htmx) | `admin.example.com` | Requires session; RBAC-gated. |
 | `api` | REST/JSON, WebSocket, JWT | `api.example.com` | Stateless, token-authenticated. |
 | `installer` | Setup wizard, health, provisioning | `install.example.com` (temporary) | Run once; can be disabled post-install. |
 
 > **Note** In development you can run a single unified process, but production deploys the apps independently so each scales on its own. See [Scaling Strategy](../deployment/scaling.md) and [Docker Architecture](../deployment/docker.md).
+
+> **Frontend model** The `website` and `admin` apps render **server HTML enhanced with [htmx](https://htmx.org)** — interactions swap `App::fragment()` regions over the wire (with SSE/WebSocket for live updates) rather than shipping a client-side SPA. See [Rendering Pipeline](../architecture/rendering-pipeline.md) and [ZealPHP Foundation](../architecture/zealphp-foundation.md).
 
 ---
 
@@ -169,7 +171,7 @@ apps/website/
 
   App::superglobals(false);           // per-coroutine superglobal isolation
   $app = App::init('0.0.0.0', 8080);  // host + port
-  $app->mode(App::MODE_COROUTINE);    // modern coroutine default
+  App::mode(App::MODE_COROUTINE);    // modern coroutine default
 
   (new \Goco\App\Website\Bootstrap())->register($app); // hooks, middleware, routes
 
